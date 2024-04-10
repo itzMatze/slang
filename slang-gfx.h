@@ -169,6 +169,7 @@ public:
         // An array of Slang entry points. The size of the array must be `entryPointCount`.
         // Each element must define only 1 Slang EntryPoint.
         slang::IComponentType** slangEntryPoints = nullptr;
+        const char* name;
     };
 
     struct CreateDesc2

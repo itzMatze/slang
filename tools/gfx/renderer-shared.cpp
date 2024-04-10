@@ -1049,7 +1049,7 @@ Result ShaderProgramBase::compileShaders(RendererBase* device)
                 (char*)diagnostics->getBufferPointer());
         }
         SLANG_RETURN_ON_FAIL(compileResult);
-        SLANG_RETURN_ON_FAIL(createShaderModule(entryPointInfo, kernelCode));
+        SLANG_RETURN_ON_FAIL(createShaderModule(entryPointInfo, kernelCode, desc.name));
         return SLANG_OK;
     };
 
@@ -1078,7 +1078,7 @@ Result ShaderProgramBase::compileShaders(RendererBase* device)
 }
 
 Result ShaderProgramBase::createShaderModule(
-    slang::EntryPointReflection* entryPointInfo, ComPtr<ISlangBlob> kernelCode)
+    slang::EntryPointReflection* entryPointInfo, ComPtr<ISlangBlob> kernelCode, const char* name)
 {
     SLANG_UNUSED(entryPointInfo);
     SLANG_UNUSED(kernelCode);

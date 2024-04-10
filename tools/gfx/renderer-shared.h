@@ -863,7 +863,7 @@ public:
 
     Slang::Result compileShaders(RendererBase* device);
     virtual Slang::Result createShaderModule(
-        slang::EntryPointReflection* entryPointInfo, Slang::ComPtr<ISlangBlob> kernelCode);
+        slang::EntryPointReflection* entryPointInfo, Slang::ComPtr<ISlangBlob> kernelCode, const char* name);
 
     virtual SLANG_NO_THROW slang::TypeReflection* SLANG_MCALL findTypeByName(const char* name) override
     {

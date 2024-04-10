@@ -9,7 +9,7 @@ namespace d3d12
 using namespace Slang;
 
 Result ShaderProgramImpl::createShaderModule(
-    slang::EntryPointReflection* entryPointInfo, ComPtr<ISlangBlob> kernelCode)
+    slang::EntryPointReflection* entryPointInfo, ComPtr<ISlangBlob> kernelCode, const char* name)
 {
     ShaderBinary shaderBin;
     shaderBin.stage = entryPointInfo->getStage();
