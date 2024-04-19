@@ -41,21 +41,28 @@ void ShaderProgramImpl::comFree() { m_device.breakStrongReference(); }
 std::string read_shader_file(const std::string& filename)
 {
     std::ifstream file(filename, std::ios::binary);
-    if (!file.is_open()) std::cerr << "Failed to open shader file \"" << filename << "\" for reading" << std::endl;
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open shader file \"" << filename << "\" for reading" << std::endl;
+        return "";
+    }
     std::ostringstream file_stream;
     file_stream << file.rdbuf();
     return file_stream.str();
 }
 
-void write_shader_file(const std::string& filename, const void* data, size_t size)
+void write_shader_file(const std::string& filename, size_t hash, const void* data, size_t size)
 {
     std::ofstream file(filename, std::ios::out | std::ios::binary);
-    if (!file.is_open()) std::cerr << "Failed to open shader file \"" << filename << "\" for writing" << std::endl;
-    if (file.is_open())
+    if (!file.is_open())
     {
-        file.write((char*)data, size);
-        file.close();
+        std::cerr << "Failed to open shader file \"" << filename << "\" for writing" << std::endl;
+        return;
     }
+    std::string hash_string("// " + std::to_string(hash) + "\n");
+    file.write(hash_string.data(), hash_string.size());
+    file.write((char*)data, size);
+    file.close();
 }
 
 VkPipelineShaderStageCreateInfo ShaderProgramImpl::compileEntryPoint(
@@ -104,12 +111,16 @@ VkPipelineShaderStageCreateInfo ShaderProgramImpl::compileEntryPoint(
     if (!std::filesystem::exists(shader_bin_dir)) std::filesystem::create_directory(shader_bin_dir);
 
     static std::atomic<int> shader_index = 0;
+    size_t hash = std::hash<std::string>{}(std::string((char*)(code->getBufferPointer())));
     std::filesystem::path shader_file(shader_dir / (std::to_string(shader_index) + std::string(entryPointName) + suffix));
-    std::filesystem::path shader_bin_file(shader_bin_dir / (std::to_string(shader_index) + std::string(entryPointName) + suffix + ".spv"));
+    std::filesystem::path shader_bin_file(shader_bin_dir / (std::to_string(hash) + ".spv"));
     shader_index++;
-    write_shader_file(shader_file, code->getBufferPointer(), code->getBufferSize());
-    //system(std::string("glslang --target-env vulkan1.2 -Os -o " + shader_bin_file.string() + " " + shader_file.string()).c_str());
-    system(std::string("glslc --target-env=vulkan1.2 -I shader -O -o " + shader_bin_file.string() + " " + shader_file.string()).c_str());
+    if (!std::filesystem::exists(shader_bin_file))
+    {
+        write_shader_file(shader_file, hash, code->getBufferPointer(), code->getBufferSize());
+        //system(std::string("glslang --target-env vulkan1.2 -Os -o " + shader_bin_file.string() + " " + shader_file.string()).c_str());
+        system(std::string("glslc --target-env=vulkan1.2 -I shader -O -o " + shader_bin_file.string() + " " + shader_file.string()).c_str());
+    }
     std::string source = read_shader_file(shader_bin_file);
     // We need to make a copy of the code, since the Slang compiler
     // will free the memory after a compile request is closed.
