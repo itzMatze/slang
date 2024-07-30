@@ -9,7 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <atomic>
-
+#include <sstream>
 namespace gfx
 {
 
@@ -105,9 +105,13 @@ VkPipelineShaderStageCreateInfo ShaderProgramImpl::compileEntryPoint(
             break;
     }
 
-    std::filesystem::path shader_dir("shader/glsl/");
+    std::filesystem::path shadertmp_dir("shader_tmp/");
+
+    if (!std::filesystem::exists(shadertmp_dir)) std::filesystem::create_directory(shadertmp_dir);
+
+    std::filesystem::path shader_dir("shader_tmp/glsl/");
     if (!std::filesystem::exists(shader_dir)) std::filesystem::create_directory(shader_dir);
-    std::filesystem::path shader_bin_dir("shader/bin/");
+    std::filesystem::path shader_bin_dir("shader_tmp/bin/");
     if (!std::filesystem::exists(shader_bin_dir)) std::filesystem::create_directory(shader_bin_dir);
 
     static std::atomic<int> shader_index = 0;
@@ -117,11 +121,11 @@ VkPipelineShaderStageCreateInfo ShaderProgramImpl::compileEntryPoint(
     shader_index++;
     if (!std::filesystem::exists(shader_bin_file))
     {
-        write_shader_file(shader_file, hash, code->getBufferPointer(), code->getBufferSize());
+        write_shader_file(shader_file.string(), hash, code->getBufferPointer(), code->getBufferSize());
         //system(std::string("glslang --target-env vulkan1.2 -Os -o " + shader_bin_file.string() + " " + shader_file.string()).c_str());
         system(std::string("glslc --target-env=vulkan1.2 -I shader -O -o " + shader_bin_file.string() + " " + shader_file.string()).c_str());
     }
-    std::string source = read_shader_file(shader_bin_file);
+    std::string source = read_shader_file(shader_bin_file.string());
     // We need to make a copy of the code, since the Slang compiler
     // will free the memory after a compile request is closed.
 

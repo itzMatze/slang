@@ -14,6 +14,7 @@ namespace vk
 
 class ShaderProgramImpl : public ShaderProgramBase
 {
+
 public:
     ShaderProgramImpl(DeviceImpl* device);
 
